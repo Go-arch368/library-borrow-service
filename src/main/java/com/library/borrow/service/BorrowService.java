@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
-
 @Service
 public class BorrowService {
 
@@ -16,18 +15,17 @@ public class BorrowService {
     private BorrowRepository borrowRepository;
 
     @Autowired
-    private BookClient bookClient; // ✅ calls Book Service!
+    private BookClient bookClient;
 
-    public BorrowRecord borrowBook(Long bookId, Long userId) {
-        // ✅ Check if book is already borrowed
+    public BorrowRecord borrowBook(Long bookId, Long userId,
+                                   String token) { // ✅ accept token
         if (borrowRepository.existsByBookIdAndReturnDateIsNull(bookId)) {
             throw new RuntimeException("Book is already borrowed!");
         }
 
-        // ✅ Mark book as unavailable in Book Service
-        bookClient.updateAvailability(bookId, false);
+        // ✅ Pass token to Book Service
+        bookClient.updateAvailability(bookId, false, token);
 
-        // ✅ Create borrow record
         BorrowRecord record = new BorrowRecord();
         record.setBookId(bookId);
         record.setUserId(userId);
@@ -37,14 +35,14 @@ public class BorrowService {
         return borrowRepository.save(record);
     }
 
-    public BorrowRecord returnBook(Long bookId) {
+    public BorrowRecord returnBook(Long bookId, String token) { // ✅ accept token
         BorrowRecord record = borrowRepository
                 .findByBookIdAndReturnDateIsNull(bookId)
                 .orElseThrow(() ->
                         new RuntimeException("No active borrow record!"));
 
-        // ✅ Mark book as available in Book Service
-        bookClient.updateAvailability(bookId, true);
+        // ✅ Pass token to Book Service
+        bookClient.updateAvailability(bookId, true, token);
 
         record.setReturnDate(LocalDate.now());
         return borrowRepository.save(record);

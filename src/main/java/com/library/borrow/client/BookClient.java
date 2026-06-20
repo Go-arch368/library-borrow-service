@@ -3,15 +3,15 @@ package com.library.borrow.client;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "book-service")  // ✅ calls BOOK-SERVICE via Eureka!
+@FeignClient(name = "book-service")
 public interface BookClient {
 
-    // Check if book is available
     @GetMapping("/api/books/{id}")
-    Object getBookById(@PathVariable Long id);
+    Object getBookById(@PathVariable Long id,
+                       @RequestHeader("Authorization") String token); // ✅
 
-    // Update book availability
     @PutMapping("/api/books/{id}/availability")
     Object updateAvailability(@PathVariable Long id,
-                              @RequestParam Boolean available);
+                              @RequestParam Boolean available,
+                              @RequestHeader("Authorization") String token); // ✅
 }
